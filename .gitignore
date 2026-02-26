@@ -1,0 +1,74 @@
+############################
+# Maven
+############################
+target/
+!.mvn/wrapper/maven-wrapper.jar
+
+############################
+# Logs
+############################
+*.log
+logs/
+
+############################
+# IntelliJ IDEA
+############################
+.idea/
+*.iws
+*.iml
+*.ipr
+out/
+
+############################
+# VS Code
+############################
+.vscode/
+
+############################
+# Eclipse
+############################
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+############################
+# NetBeans
+############################
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+build/
+
+############################
+# OS
+############################
+.DS_Store
+Thumbs.db
+
+############################
+# Environment variables
+############################
+.env
+.env.*
+
+############################
+# Docker
+############################
+docker-compose.override.yml
+
+############################
+# Testcontainers
+############################
+testcontainers.properties
+
+############################
+# Temporary files
+############################
+*.swp
+*.swo
