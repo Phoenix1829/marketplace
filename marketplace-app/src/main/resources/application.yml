@@ -21,6 +21,23 @@ server:
 
 management:
   endpoints:
+    health:
+      probes:
+        enabled: true
     web:
       exposure:
         include: health,info
+
+  endpoint:
+    health:
+      show-details: always
+
+  health:
+    db:
+      enabled: true
+    diskspace:
+      enabled: true
+
+  info:
+    env:
+      enabled: true
