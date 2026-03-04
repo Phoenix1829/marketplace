@@ -12,5 +12,7 @@ public interface ProductService {
 
     Page<ProductResponse> getAllProducts(Pageable pageable);
 
+    ProductResponse getProductById(Long id);
+
     void deleteProduct(Long productId);
 }

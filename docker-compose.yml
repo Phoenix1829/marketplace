@@ -19,6 +19,13 @@ services:
       timeout: 5s
       retries: 5
 
+  redis:
+    image: redis:7
+    container_name: marketplace-redis
+    restart: always
+    ports:
+      - "6379:6379"
+
   app:
     build:
       context: .
@@ -27,6 +34,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      redis:
+        condition: service_started
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/marketplace
       SPRING_DATASOURCE_USERNAME: postgres

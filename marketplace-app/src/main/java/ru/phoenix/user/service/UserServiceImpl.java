@@ -1,5 +1,7 @@
 package ru.phoenix.user.service;
 
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import ru.phoenix.exception.AccessDeniedException;
@@ -54,6 +56,7 @@ public class UserServiceImpl implements UserService {
         );
     }
 
+    @CacheEvict(value = {"users", "user"}, allEntries = true)
     @Override
     public void promoteToAdmin(Long userId) {
 
@@ -68,6 +71,7 @@ public class UserServiceImpl implements UserService {
         userRepository.save(user);
     }
 
+    @CacheEvict(value = {"users", "user"}, allEntries = true)
     @Override
     public void demoteAdmin(Long userId) {
 
@@ -90,6 +94,8 @@ public class UserServiceImpl implements UserService {
         userRepository.save(targetUser);
     }
 
+    @Cacheable(value = "users",
+            key = "#pageable.pageNumber + '-' + #pageable.pageSize")
     @Override
     public Page<UserResponse> getAllUsers(Pageable pageable) {
 

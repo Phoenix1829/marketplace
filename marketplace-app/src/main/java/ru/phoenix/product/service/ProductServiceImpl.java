@@ -1,5 +1,7 @@
 package ru.phoenix.product.service;
 
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import ru.phoenix.exception.AccessDeniedException;
@@ -29,6 +31,7 @@ public class ProductServiceImpl implements ProductService {
         this.permissionService = permissionService;
     }
 
+    @CacheEvict(value = "products", allEntries = true)
     @Override
     public ProductResponse createProduct(CreateProductRequest request) {
 
@@ -51,6 +54,7 @@ public class ProductServiceImpl implements ProductService {
         return mapToResponse(saved);
     }
 
+    @CacheEvict(value = {"products", "product"}, allEntries = true)
     @Override
     public void deleteProduct(Long productId) {
 
@@ -75,11 +79,24 @@ public class ProductServiceImpl implements ProductService {
         productRepository.delete(product);
     }
 
+    @Cacheable(value = "products",
+            key = "#pageable.pageNumber + '-' + #pageable.pageSize")
     @Override
     public Page<ProductResponse> getAllProducts(Pageable pageable) {
 
         return productRepository.findAll(pageable)
                 .map(this::mapToResponse);
+    }
+
+    @Cacheable(value = "product", key = "#id")
+    @Override
+    public ProductResponse getProductById(Long id) {
+
+        Product product = productRepository.findById(id)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Product not found"));
+
+        return mapToResponse(product);
     }
 
     private ProductResponse mapToResponse(Product product) {
