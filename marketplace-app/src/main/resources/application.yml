@@ -32,7 +32,7 @@ management:
         enabled: true
     web:
       exposure:
-        include: health,info
+        include: health,info,prometheus
 
   endpoint:
     health:
@@ -47,3 +47,10 @@ management:
   info:
     env:
       enabled: true
+
+  prometheus:
+    enabled: true
+    metrics:
+      tags:
+        application: ${spring.application.name}
+
