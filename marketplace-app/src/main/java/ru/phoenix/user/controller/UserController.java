@@ -1,11 +1,11 @@
 package ru.phoenix.user.controller;
 
-import org.springframework.security.access.prepost.PreAuthorize;
 import ru.phoenix.user.dto.UserResponse;
 import ru.phoenix.user.service.UserService;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
-import java.util.List;
 
 @RestController
 @RequestMapping("/users")
@@ -17,9 +17,18 @@ public class UserController {
         this.userService = userService;
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
-    public List<UserResponse> getAllUsers() {
-        return userService.getAllUsers();
+    public Page<UserResponse> getAllUsers(Pageable pageable) {
+        return userService.getAllUsers(pageable);
+    }
+
+    @PatchMapping("/{id}/promote")
+    public void promoteToAdmin(@PathVariable Long id) {
+        userService.promoteToAdmin(id);
+    }
+
+    @PatchMapping("/{id}/demote")
+    public void demoteAdmin(@PathVariable Long id) {
+        userService.demoteAdmin(id);
     }
 }

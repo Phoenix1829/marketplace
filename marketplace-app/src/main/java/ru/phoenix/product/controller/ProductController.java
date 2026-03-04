@@ -25,6 +25,11 @@ public class ProductController {
         return productService.createProduct(request);
     }
 
+    @DeleteMapping("/{id}")
+    public void deleteProduct(@PathVariable Long id) {
+        productService.deleteProduct(id);
+    }
+
     @GetMapping
     public Page<ProductResponse> getAllProducts(
             @PageableDefault(size = 10, sort = "createdAt") Pageable pageable) {

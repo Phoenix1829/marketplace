@@ -32,6 +32,13 @@ public class SecurityConfig {
                                 "/auth/**",
                                 "/actuator/health"
                         ).permitAll()
+                        .requestMatchers(
+                                "/v3/api-docs/**",
+                                "/swagger-ui/**",
+                                "/swagger-ui.html"
+                        ).permitAll()
+                        .requestMatchers("/users/**")
+                        .hasAnyRole("ADMIN", "SENIOR_ADMIN")
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtFilter,

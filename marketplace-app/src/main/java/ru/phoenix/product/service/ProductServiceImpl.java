@@ -2,10 +2,13 @@ package ru.phoenix.product.service;
 
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import ru.phoenix.exception.AccessDeniedException;
+import ru.phoenix.exception.ResourceNotFoundException;
 import ru.phoenix.product.dto.CreateProductRequest;
 import ru.phoenix.product.dto.ProductResponse;
 import ru.phoenix.product.entity.Product;
 import ru.phoenix.product.repository.ProductRepository;
+import ru.phoenix.security.permission.PermissionService;
 import ru.phoenix.user.entity.User;
 import ru.phoenix.user.repository.UserRepository;
 import org.springframework.data.domain.Page;
@@ -17,11 +20,13 @@ public class ProductServiceImpl implements ProductService {
 
     private final ProductRepository productRepository;
     private final UserRepository userRepository;
+    private final PermissionService permissionService;
 
     public ProductServiceImpl(ProductRepository productRepository,
-                              UserRepository userRepository) {
+                              UserRepository userRepository, PermissionService permissionService) {
         this.productRepository = productRepository;
         this.userRepository = userRepository;
+        this.permissionService = permissionService;
     }
 
     @Override
@@ -44,6 +49,30 @@ public class ProductServiceImpl implements ProductService {
         Product saved = productRepository.save(product);
 
         return mapToResponse(saved);
+    }
+
+    @Override
+    public void deleteProduct(Long productId) {
+
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Product not found"));
+
+        String currentEmail = SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getName();
+
+        if (!permissionService.canDeleteProduct(
+                currentEmail,
+                product.getOwner().getEmail())) {
+
+            throw new AccessDeniedException(
+                    "You have no permission to delete this product"
+            );
+        }
+
+        productRepository.delete(product);
     }
 
     @Override
