@@ -4,6 +4,7 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import ru.phoenix.common.metrics.MetricsService;
 import ru.phoenix.exception.AccessDeniedException;
 import ru.phoenix.exception.ResourceNotFoundException;
 import ru.phoenix.exception.UserAlreadyExistsException;
@@ -24,11 +25,13 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final PermissionService permissionService;
+    private final MetricsService metricsService;
 
-    public UserServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder, PermissionService permissionService) {
+    public UserServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder, PermissionService permissionService, MetricsService metricsService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.permissionService = permissionService;
+        this.metricsService = metricsService;
     }
 
     @Override
@@ -47,6 +50,8 @@ public class UserServiceImpl implements UserService {
         );
 
         User saved = userRepository.save(user);
+
+        metricsService.userCreated();
 
         return new UserResponse(
                 saved.getId(),
@@ -69,6 +74,8 @@ public class UserServiceImpl implements UserService {
         user.setRole(Role.ADMIN);
 
         userRepository.save(user);
+
+        metricsService.userPromoted();
     }
 
     @CacheEvict(value = {"users", "user"}, allEntries = true)
@@ -92,6 +99,8 @@ public class UserServiceImpl implements UserService {
         targetUser.setRole(Role.USER);
 
         userRepository.save(targetUser);
+
+        metricsService.userDemoted();
     }
 
     @Cacheable(value = "users",

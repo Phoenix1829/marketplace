@@ -4,6 +4,7 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import ru.phoenix.common.metrics.MetricsService;
 import ru.phoenix.exception.AccessDeniedException;
 import ru.phoenix.exception.ResourceNotFoundException;
 import ru.phoenix.product.dto.CreateProductRequest;
@@ -23,12 +24,14 @@ public class ProductServiceImpl implements ProductService {
     private final ProductRepository productRepository;
     private final UserRepository userRepository;
     private final PermissionService permissionService;
+    private final MetricsService metricsService;
 
     public ProductServiceImpl(ProductRepository productRepository,
-                              UserRepository userRepository, PermissionService permissionService) {
+                              UserRepository userRepository, PermissionService permissionService, MetricsService metricsService) {
         this.productRepository = productRepository;
         this.userRepository = userRepository;
         this.permissionService = permissionService;
+        this.metricsService = metricsService;
     }
 
     @CacheEvict(value = "products", allEntries = true)
@@ -50,6 +53,8 @@ public class ProductServiceImpl implements ProductService {
         );
 
         Product saved = productRepository.save(product);
+
+        metricsService.productCreated();
 
         return mapToResponse(saved);
     }
@@ -77,12 +82,17 @@ public class ProductServiceImpl implements ProductService {
         }
 
         productRepository.delete(product);
+
+        metricsService.productDeleted();
+
     }
 
     @Cacheable(value = "products",
             key = "#pageable.pageNumber + '-' + #pageable.pageSize")
     @Override
     public Page<ProductResponse> getAllProducts(Pageable pageable) {
+
+        metricsService.productViewed();
 
         return productRepository.findAll(pageable)
                 .map(this::mapToResponse);

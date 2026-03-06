@@ -46,6 +46,27 @@ services:
     depends_on:
       - prometheus
 
+  loki:
+    image: grafana/loki:2.9.0
+    container_name: loki
+    command: -config.file=/etc/loki/local-config.yaml
+    volumes:
+      - ./monitoring/loki.yaml:/etc/loki/local-config.yaml
+      - loki-data:/loki
+    ports:
+      - "3100:3100"
+
+  tempo:
+    image: grafana/tempo:2.3.0
+    container_name: tempo
+    volumes:
+      - ./monitoring/tempo.yaml:/etc/tempo.yaml
+    command: [ "-config.file=/etc/tempo.yaml" ]
+    ports:
+      - "3200:3200"
+      - "4317:4317"
+      - "4318:4318"
+
   app:
     build:
       context: .
@@ -55,6 +76,8 @@ services:
       postgres:
         condition: service_healthy
       redis:
+        condition: service_started
+      tempo:
         condition: service_started
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/marketplace
@@ -70,3 +93,5 @@ services:
 
 volumes:
   postgres_data:
+  tempo-data:
+  loki-data:

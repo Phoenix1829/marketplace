@@ -2,6 +2,7 @@ package ru.phoenix.auth.service;
 
 import ru.phoenix.auth.dto.LoginRequest;
 import ru.phoenix.auth.dto.RegisterRequest;
+import ru.phoenix.common.metrics.MetricsService;
 import ru.phoenix.exception.UserAlreadyExistsException;
 import ru.phoenix.user.entity.Role;
 import ru.phoenix.user.entity.User;
@@ -16,13 +17,15 @@ public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
+    private final MetricsService metricsService;
 
     public AuthService(UserRepository userRepository,
                        PasswordEncoder passwordEncoder,
-                       JwtService jwtService) {
+                       JwtService jwtService, MetricsService metricsService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
+        this.metricsService = metricsService;
     }
 
     public String login(LoginRequest request) {
@@ -34,9 +37,12 @@ public class AuthService {
             throw new RuntimeException("Invalid credentials");
         }
 
+        metricsService.loginSuccess();
+
         return jwtService.generateToken(
                 user.getEmail(),
                 user.getRole().name()
+
         );
     }
 
@@ -53,5 +59,7 @@ public class AuthService {
         );
 
         userRepository.save(user);
+
+        metricsService.userCreated();
     }
 }
